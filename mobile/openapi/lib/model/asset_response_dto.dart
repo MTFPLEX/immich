@@ -124,7 +124,7 @@ class AssetResponseDto {
 
   AssetStackResponseDto? stack;
 
-  List<TagResponseDto> tags;
+  List<AssetTagResponseDto> tags;
 
   String? thumbhash;
 
@@ -312,7 +312,7 @@ class AssetResponseDto {
         resized: mapValueOfType<bool>(json, r'resized')!,
         smartInfo: SmartInfoResponseDto.fromJson(json[r'smartInfo']),
         stack: AssetStackResponseDto.fromJson(json[r'stack']),
-        tags: TagResponseDto.listFromJson(json[r'tags']),
+        tags: AssetTagResponseDto.listFromJson(json[r'tags']),
         thumbhash: mapValueOfType<String>(json, r'thumbhash'),
         type: AssetTypeEnum.fromJson(json[r'type'])!,
         unassignedFaces: AssetFaceWithoutPersonResponseDto.listFromJson(json[r'unassignedFaces']),

@@ -8,7 +8,6 @@ import {
   mapFacesWithoutPerson,
   mapPerson,
 } from 'src/dtos/person.dto';
-import { TagResponseDto, mapTag } from 'src/dtos/tag.dto';
 import { UserResponseDto, mapUser } from 'src/dtos/user.dto';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
@@ -48,13 +47,17 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
   isOffline!: boolean;
   exifInfo?: ExifResponseDto;
   smartInfo?: SmartInfoResponseDto;
-  tags?: TagResponseDto[];
+  tags?: AssetTagResponseDto[];
   people?: PersonWithFacesResponseDto[];
   unassignedFaces?: AssetFaceWithoutPersonResponseDto[];
   /**base64 encoded sha1 hash */
   checksum!: string;
   stack?: AssetStackResponseDto | null;
   duplicateId?: string | null;
+}
+
+export class AssetTagResponseDto {
+  id!: string;
 }
 
 export class AssetStackResponseDto {
@@ -144,7 +147,7 @@ export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): As
     exifInfo: entity.exifInfo ? mapExif(entity.exifInfo) : undefined,
     smartInfo: entity.smartInfo ? mapSmartInfo(entity.smartInfo) : undefined,
     livePhotoVideoId: entity.livePhotoVideoId,
-    tags: entity.tags?.map(mapTag),
+    tags: entity.tags?.map(({ id }) => ({ id })),
     people: peopleWithFaces(entity.faces),
     unassignedFaces: entity.faces?.filter((face) => !face.person).map((a) => mapFacesWithoutPerson(a)),
     checksum: entity.checksum.toString('base64'),

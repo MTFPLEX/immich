@@ -1,6 +1,7 @@
 import { browser } from '$app/environment';
 import { purchaseStore } from '$lib/stores/purchase.store';
 import { serverInfo } from '$lib/stores/server-info.store';
+import { loadTags } from '$lib/stores/tags.store';
 import { preferences as preferences$, user as user$ } from '$lib/stores/user.store';
 import { getAboutInfo, getMyPreferences, getMyUser, getStorage } from '@immich/sdk';
 import { redirect } from '@sveltejs/kit';
@@ -23,6 +24,8 @@ export const loadUser = async () => {
       [user, preferences, serverInfo] = await Promise.all([getMyUser(), getMyPreferences(), getAboutInfo()]);
       user$.set(user);
       preferences$.set(preferences);
+
+      await loadTags();
 
       // Check for license status
       if (serverInfo.licensed || user.license?.activatedAt) {

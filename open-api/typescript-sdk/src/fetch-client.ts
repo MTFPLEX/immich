@@ -197,11 +197,8 @@ export type AssetStackResponseDto = {
     id: string;
     primaryAssetId: string;
 };
-export type TagResponseDto = {
+export type AssetTagResponseDto = {
     id: string;
-    name: string;
-    "type": TagTypeEnum;
-    userId: string;
 };
 export type AssetResponseDto = {
     /** base64 encoded sha1 hash */
@@ -232,7 +229,7 @@ export type AssetResponseDto = {
     resized: boolean;
     smartInfo?: SmartInfoResponseDto;
     stack?: (AssetStackResponseDto) | null;
-    tags?: TagResponseDto[];
+    tags?: AssetTagResponseDto[];
     thumbhash: string | null;
     "type": AssetTypeEnum;
     unassignedFaces?: AssetFaceWithoutPersonResponseDto[];
@@ -1172,12 +1169,19 @@ export type ReverseGeocodingStateResponseDto = {
     lastImportFileName: string | null;
     lastUpdate: string | null;
 };
-export type CreateTagDto = {
+export type TagResponseDto = {
+    createdAt: string;
+    id: string;
     name: string;
-    "type": TagTypeEnum;
+    path: string;
+    updatedAt: string;
 };
-export type UpdateTagDto = {
-    name?: string;
+export type TagCreateDto = {
+    name: string;
+    parentId?: string | null;
+};
+export type TagUpsertDto = {
+    tags: string[];
 };
 export type TimeBucketResponseDto = {
     count: number;
@@ -2863,8 +2867,8 @@ export function getAllTags(opts?: Oazapfts.RequestOpts) {
         ...opts
     }));
 }
-export function createTag({ createTagDto }: {
-    createTagDto: CreateTagDto;
+export function createTag({ tagCreateDto }: {
+    tagCreateDto: TagCreateDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 201;
@@ -2872,7 +2876,19 @@ export function createTag({ createTagDto }: {
     }>("/tags", oazapfts.json({
         ...opts,
         method: "POST",
-        body: createTagDto
+        body: tagCreateDto
+    })));
+}
+export function upsertTags({ tagUpsertDto }: {
+    tagUpsertDto: TagUpsertDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: TagResponseDto[];
+    }>("/tags", oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: tagUpsertDto
     })));
 }
 export function deleteTag({ id }: {
@@ -2893,53 +2909,30 @@ export function getTagById({ id }: {
         ...opts
     }));
 }
-export function updateTag({ id, updateTagDto }: {
+export function untagAssets({ id, bulkIdsDto }: {
     id: string;
-    updateTagDto: UpdateTagDto;
+    bulkIdsDto: BulkIdsDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
-        data: TagResponseDto;
-    }>(`/tags/${encodeURIComponent(id)}`, oazapfts.json({
-        ...opts,
-        method: "PATCH",
-        body: updateTagDto
-    })));
-}
-export function untagAssets({ id, assetIdsDto }: {
-    id: string;
-    assetIdsDto: AssetIdsDto;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: AssetIdsResponseDto[];
+        data: BulkIdResponseDto[];
     }>(`/tags/${encodeURIComponent(id)}/assets`, oazapfts.json({
         ...opts,
         method: "DELETE",
-        body: assetIdsDto
+        body: bulkIdsDto
     })));
 }
-export function getTagAssets({ id }: {
+export function tagAssets({ id, bulkIdsDto }: {
     id: string;
+    bulkIdsDto: BulkIdsDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
-        data: AssetResponseDto[];
-    }>(`/tags/${encodeURIComponent(id)}/assets`, {
-        ...opts
-    }));
-}
-export function tagAssets({ id, assetIdsDto }: {
-    id: string;
-    assetIdsDto: AssetIdsDto;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: AssetIdsResponseDto[];
+        data: BulkIdResponseDto[];
     }>(`/tags/${encodeURIComponent(id)}/assets`, oazapfts.json({
         ...opts,
         method: "PUT",
-        body: assetIdsDto
+        body: bulkIdsDto
     })));
 }
 export function getTimeBucket({ albumId, isArchived, isFavorite, isTrashed, key, order, personId, size, timeBucket, userId, withPartners, withStacked }: {
@@ -3170,11 +3163,6 @@ export enum AlbumUserRole {
     Editor = "editor",
     Viewer = "viewer"
 }
-export enum TagTypeEnum {
-    Object = "OBJECT",
-    Face = "FACE",
-    Custom = "CUSTOM"
-}
 export enum AssetTypeEnum {
     Image = "IMAGE",
     Video = "VIDEO",
@@ -3263,6 +3251,7 @@ export enum Permission {
     TagRead = "tag.read",
     TagUpdate = "tag.update",
     TagDelete = "tag.delete",
+    TagAsset = "tag.asset",
     AdminUserCreate = "admin.user.create",
     AdminUserRead = "admin.user.read",
     AdminUserUpdate = "admin.user.update",

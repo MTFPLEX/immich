@@ -94,6 +94,7 @@ class Permission {
   static const tagPeriodRead = Permission._(r'tag.read');
   static const tagPeriodUpdate = Permission._(r'tag.update');
   static const tagPeriodDelete = Permission._(r'tag.delete');
+  static const tagPeriodAsset = Permission._(r'tag.asset');
   static const adminPeriodUserPeriodCreate = Permission._(r'admin.user.create');
   static const adminPeriodUserPeriodRead = Permission._(r'admin.user.read');
   static const adminPeriodUserPeriodUpdate = Permission._(r'admin.user.update');
@@ -172,6 +173,7 @@ class Permission {
     tagPeriodRead,
     tagPeriodUpdate,
     tagPeriodDelete,
+    tagPeriodAsset,
     adminPeriodUserPeriodCreate,
     adminPeriodUserPeriodRead,
     adminPeriodUserPeriodUpdate,
@@ -285,6 +287,7 @@ class PermissionTypeTransformer {
         case r'tag.read': return Permission.tagPeriodRead;
         case r'tag.update': return Permission.tagPeriodUpdate;
         case r'tag.delete': return Permission.tagPeriodDelete;
+        case r'tag.asset': return Permission.tagPeriodAsset;
         case r'admin.user.create': return Permission.adminPeriodUserPeriodCreate;
         case r'admin.user.read': return Permission.adminPeriodUserPeriodRead;
         case r'admin.user.update': return Permission.adminPeriodUserPeriodUpdate;

@@ -1,38 +1,43 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
-import { TagEntity, TagType } from 'src/entities/tag.entity';
-import { Optional } from 'src/validation';
+import { IsNotEmpty, IsString } from 'class-validator';
+import { TagEntity } from 'src/entities/tag.entity';
+import { ValidateUUID } from 'src/validation';
 
-export class CreateTagDto {
+export class TagCreateDto {
   @IsString()
   @IsNotEmpty()
   name!: string;
 
-  @IsEnum(TagType)
-  @IsNotEmpty()
-  @ApiProperty({ enumName: 'TagTypeEnum', enum: TagType })
-  type!: TagType;
+  @ValidateUUID({ optional: true, nullable: true })
+  parentId?: string | null;
 }
 
-export class UpdateTagDto {
-  @IsString()
-  @Optional()
-  name?: string;
+export class TagUpsertDto {
+  @IsString({ each: true })
+  @IsNotEmpty({ each: true })
+  tags!: string[];
 }
 
 export class TagResponseDto {
   id!: string;
-  @ApiProperty({ enumName: 'TagTypeEnum', enum: TagType })
-  type!: string;
   name!: string;
-  userId!: string;
+  path!: string;
+  createdAt!: Date;
+  updatedAt!: Date;
 }
 
 export function mapTag(entity: TagEntity): TagResponseDto {
+  const tags = [entity.name];
+  let parent = entity.parent;
+  while (parent) {
+    tags.push(parent.name);
+    parent = parent.parent;
+  }
+
   return {
     id: entity.id,
-    type: entity.type,
     name: entity.name,
-    userId: entity.userId,
+    path: tags.toReversed().join('/'),
+    createdAt: entity.createdAt,
+    updatedAt: entity.updatedAt,
   };
 }
